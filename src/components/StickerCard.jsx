@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 
 const statusStyles = {
-  missing: {
+  falta: {
     border: '1px solid #4b5563',
     background: '#f3f4f6',
     color: '#111827',
   },
-  collected: {
+  tengo: {
     border: '1px solid #1f7a1f',
     background: '#e6f4ea',
     color: '#0f3d1a',
   },
-  duplicate: {
+  repetida: {
     border: '1px solid #b45309',
     background: '#fef3c7',
     color: '#78350f',
@@ -19,8 +19,8 @@ const statusStyles = {
 };
 
 function StickerCard({ number, name, group, status, onToggle }) {
-  const safeStatus = statusStyles[status] ? status : 'missing';
-  const label = safeStatus === 'missing' ? 'Falta' : safeStatus === 'collected' ? 'Tengo' : 'Repetida';
+  const safeStatus = statusStyles[status] ? status : 'falta';
+  const label = safeStatus === 'falta' ? 'Falta' : safeStatus === 'tengo' ? 'Tengo' : 'Repetida';
 
   return (
     <button
@@ -48,7 +48,7 @@ StickerCard.propTypes = {
   number: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   name: PropTypes.string.isRequired,
   group: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  status: PropTypes.oneOf(['missing', 'collected', 'duplicate']),
+  status: PropTypes.oneOf(['falta', 'tengo', 'repetida']),
   onToggle: PropTypes.func,
 };
 

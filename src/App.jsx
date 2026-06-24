@@ -1,49 +1,53 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import StickerCard from './components/StickerCard';
 import stickersData from './data/stickers';
 
-const statusOrder = ['missing', 'collected', 'duplicate'];
+const statusOrder = ['falta', 'tengo', 'repetida'];
 
 const statusLabels = {
-  missing: 'Falta',
-  collected: 'Tengo',
-  duplicate: 'Repetida',
+  falta: 'Falta',
+  tengo: 'Tengo',
+  repetida: 'Repetida',
 };
 
+const getInitialStickers = () => {
+  const safeStickers = Array.isArray(stickersData) ? stickersData : [];
+  return safeStickers.filter((sticker) => sticker && typeof sticker === 'object');
+};
+
+const buildInitialStatuses = (stickers) =>
+  Object.fromEntries(stickers.map((sticker) => [sticker.id, 'falta']));
+
 function App() {
-  const [stickers, setStickers] = useState(() => {
-    const safeStickers = Array.isArray(stickersData) ? stickersData : [];
-    return safeStickers.filter((sticker) => sticker && typeof sticker === 'object');
-  });
+  const [stickers] = useState(getInitialStickers);
+  const [statuses, setStatuses] = useState(() => buildInitialStatuses(stickers));
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    console.log('Figuritas cargadas:', stickers);
-  }, [stickers]);
-
   const counts = useMemo(() => {
-    return stickers.reduce(
-      (acc, sticker) => {
-        acc[sticker.status] += 1;
+    return Object.values(statuses).reduce(
+      (acc, status) => {
+        acc[status] += 1;
         return acc;
       },
-      { missing: 0, collected: 0, duplicate: 0 }
+      { falta: 0, tengo: 0, repetida: 0 }
     );
-  }, [stickers]);
+  }, [statuses]);
 
-  const toggleStatus = (id) => {
-    setStickers((current) =>
-      current.map((sticker) => {
-        if (sticker.id !== id) return sticker;
-        const currentIndex = statusOrder.indexOf(sticker.status);
-        const nextIndex = (currentIndex + 1) % statusOrder.length;
-        return { ...sticker, status: statusOrder[nextIndex] };
-      })
-    );
+  const handleStatusChange = (id) => {
+    setStatuses((currentStatuses) => {
+      const currentStatus = currentStatuses[id] ?? 'falta';
+      const currentIndex = statusOrder.indexOf(currentStatus);
+      const nextIndex = (currentIndex + 1) % statusOrder.length;
+
+      return {
+        ...currentStatuses,
+        [id]: statusOrder[nextIndex],
+      };
+    });
   };
 
-  const visibleStickers = stickers.filter((sticker) => filter === 'all' || sticker.status === filter);
+  const visibleStickers = stickers.filter((sticker) => filter === 'all' || statuses[sticker.id] === filter);
   const previewStickers = visibleStickers.slice(0, 5);
 
   return (
@@ -56,14 +60,14 @@ function App() {
         </div>
         <div style={styles.summaryBox} role="status" aria-live="polite">
           <div style={styles.summaryItem}><strong>{stickers.length}</strong><span>Total</span></div>
-          <div style={styles.summaryItem}><strong>{counts.collected}</strong><span>Tengo</span></div>
-          <div style={styles.summaryItem}><strong>{counts.missing}</strong><span>Faltan</span></div>
-          <div style={styles.summaryItem}><strong>{counts.duplicate}</strong><span>Repetidas</span></div>
+          <div style={styles.summaryItem}><strong>{counts.tengo}</strong><span>Tengo</span></div>
+          <div style={styles.summaryItem}><strong>{counts.falta}</strong><span>Faltan</span></div>
+          <div style={styles.summaryItem}><strong>{counts.repetida}</strong><span>Repetidas</span></div>
         </div>
       </header>
 
       <div style={styles.filters} role="group" aria-label="Filtrar figuritas por estado">
-        {['all', 'missing', 'collected', 'duplicate'].map((option) => (
+        {['all', 'falta', 'tengo', 'repetida'].map((option) => (
           <button
             key={option}
             onClick={() => setFilter(option)}
@@ -82,8 +86,8 @@ function App() {
               number={sticker.number}
               name={sticker.name}
               group={sticker.group}
-              status={sticker.status}
-              onToggle={() => toggleStatus(sticker.id)}
+              status={statuses[sticker.id] ?? 'falta'}
+              onToggle={() => handleStatusChange(sticker.id)}
             />
           </ErrorBoundary>
         ))}

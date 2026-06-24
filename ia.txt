@@ -28,3 +28,15 @@ Qué modifiqué o corregí:
 - Implementé un ErrorBoundary para capturar errores de render y mostrar un mensaje accesible.
 - Mejoré la semántica de la interfaz con botones accesibles, roles de estado, etiquetas de grupo y soporte para teclado.
 
+=== Etapa 4 ===
+Prompt: "permite cambiar el estado de cada figurita de forma interactiva entre falta, tengo y repetida"
+Resultado: cada figurita ahora cambia de estado al hacer clic, alternando en el orden falta → tengo → repetida → falta.
+Utilidad: útil.
+
+Qué modifiqué o corregí:
+- Implementé un estado en App.jsx basado en un objeto de estados por figurita usando useState.
+- Inicialicé todas las figuritas en estado "falta".
+- Creé la función handleStatusChange(id) para alternar el estado de cada figurita.
+- Pasé esa función como prop a StickerCard y la ejecuté al hacer clic en la tarjeta.
+- Ajusté el estilo visual del componente para reflejar el estado actual de forma inmediata.
+
