@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import AlbumSummary from './components/AlbumSummary';
 import ErrorBoundary from './components/ErrorBoundary';
 import StickerCard from './components/StickerCard';
 import stickersData from './data/stickers';
@@ -19,10 +20,36 @@ const getInitialStickers = () => {
 const buildInitialStatuses = (stickers) =>
   Object.fromEntries(stickers.map((sticker) => [sticker.id, 'falta']));
 
+const STORAGE_KEY = 'album-stickers-statuses';
+
 function App() {
   const [stickers] = useState(getInitialStickers);
-  const [statuses, setStatuses] = useState(() => buildInitialStatuses(stickers));
-  const [filter, setFilter] = useState('all');
+  const [statuses, setStatuses] = useState(() => {
+    if (typeof window === 'undefined') {
+      return buildInitialStatuses(stickers);
+    }
+
+    try {
+      const savedStatuses = window.localStorage.getItem(STORAGE_KEY);
+      if (!savedStatuses) {
+        return buildInitialStatuses(stickers);
+      }
+
+      const parsedStatuses = JSON.parse(savedStatuses);
+      if (!parsedStatuses || typeof parsedStatuses !== 'object') {
+        return buildInitialStatuses(stickers);
+      }
+
+      return {
+        ...buildInitialStatuses(stickers),
+        ...parsedStatuses,
+      };
+    } catch {
+      return buildInitialStatuses(stickers);
+    }
+  });
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const counts = useMemo(() => {
     return Object.values(statuses).reduce(
@@ -47,8 +74,29 @@ function App() {
     });
   };
 
-  const visibleStickers = stickers.filter((sticker) => filter === 'all' || statuses[sticker.id] === filter);
-  const previewStickers = visibleStickers.slice(0, 5);
+  const visibleStickers = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return stickers.filter((sticker) => {
+      const matchesStatus = statusFilter === 'all' || statuses[sticker.id] === statusFilter;
+      const haystack = `${sticker.number} ${sticker.name}`.toLowerCase();
+      const matchesSearch = normalizedSearch === '' || haystack.includes(normalizedSearch);
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [searchTerm, statusFilter, stickers, statuses]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(statuses));
+  }, [statuses]);
+
+  const completionPercentage = stickers.length > 0
+    ? Math.round((counts.tengo / stickers.length) * 100)
+    : 0;
 
   return (
     <div style={styles.page}>
@@ -58,29 +106,46 @@ function App() {
           <h1 style={styles.title}>Mi álbum de figuritas</h1>
           <p style={styles.subtitle}>Gestiona tus figuritas de forma visual y rápida.</p>
         </div>
-        <div style={styles.summaryBox} role="status" aria-live="polite">
-          <div style={styles.summaryItem}><strong>{stickers.length}</strong><span>Total</span></div>
-          <div style={styles.summaryItem}><strong>{counts.tengo}</strong><span>Tengo</span></div>
-          <div style={styles.summaryItem}><strong>{counts.falta}</strong><span>Faltan</span></div>
-          <div style={styles.summaryItem}><strong>{counts.repetida}</strong><span>Repetidas</span></div>
-        </div>
+        <AlbumSummary
+          total={stickers.length}
+          tengo={counts.tengo}
+          repetidas={counts.repetida}
+          faltan={counts.falta}
+          completionPercentage={completionPercentage}
+        />
       </header>
 
-      <div style={styles.filters} role="group" aria-label="Filtrar figuritas por estado">
-        {['all', 'falta', 'tengo', 'repetida'].map((option) => (
-          <button
-            key={option}
-            onClick={() => setFilter(option)}
-            style={{ ...styles.filterButton, ...(filter === option ? styles.activeFilter : {}) }}
-            aria-pressed={filter === option}
-          >
-            {option === 'all' ? 'Todas' : statusLabels[option]}
-          </button>
-        ))}
+      <div style={styles.controls}>
+        <label style={styles.searchBox} htmlFor="sticker-search">
+          <span style={styles.searchLabel}>Buscar</span>
+          <input
+            id="sticker-search"
+            type="text"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Por nombre o número"
+            style={styles.searchInput}
+          />
+        </label>
+
+        <div style={styles.filters} role="group" aria-label="Filtrar figuritas por estado">
+          {['all', 'falta', 'tengo', 'repetida'].map((option) => (
+            <button
+              key={option}
+              onClick={() => setStatusFilter(option)}
+              style={{ ...styles.filterButton, ...(statusFilter === option ? styles.activeFilter : {}) }}
+              aria-pressed={statusFilter === option}
+            >
+              {option === 'all' ? 'Todas' : statusLabels[option]}
+            </button>
+          ))}
+        </div>
       </div>
 
+      <p style={styles.resultsText}>Mostrando {visibleStickers.length} figuritas</p>
+
       <section style={styles.grid} aria-label="Lista de figuritas">
-        {previewStickers.map((sticker) => (
+        {visibleStickers.map((sticker) => (
           <ErrorBoundary key={sticker.id}>
             <StickerCard
               number={sticker.number}
@@ -127,26 +192,37 @@ const styles = {
     margin: 0,
     color: '#486581',
   },
-  summaryBox: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, minmax(70px, 1fr))',
-    gap: '8px',
-    padding: '12px',
-    borderRadius: '16px',
-    background: '#fff',
-    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
+  controls: {
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: '12px',
   },
-  summaryItem: {
+  searchBox: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    fontSize: '0.9rem',
+    gap: '4px',
+    minWidth: '220px',
+    flex: 1,
+  },
+  searchLabel: {
+    fontSize: '0.85rem',
+    fontWeight: '700',
+    color: '#486581',
+  },
+  searchInput: {
+    border: '1px solid #bcccdc',
+    borderRadius: '12px',
+    padding: '10px 12px',
+    fontSize: '0.95rem',
+    color: '#102a43',
   },
   filters: {
     display: 'flex',
     gap: '8px',
     flexWrap: 'wrap',
-    marginBottom: '20px',
+    marginBottom: '8px',
   },
   filterButton: {
     border: '1px solid #bcccdc',
@@ -160,6 +236,11 @@ const styles = {
     background: '#102a43',
     color: '#fff',
     borderColor: '#102a43',
+  },
+  resultsText: {
+    margin: '0 0 16px',
+    color: '#486581',
+    fontWeight: '600',
   },
   grid: {
     display: 'grid',

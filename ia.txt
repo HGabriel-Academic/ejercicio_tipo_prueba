@@ -29,14 +29,24 @@ Qué modifiqué o corregí:
 - Mejoré la semántica de la interfaz con botones accesibles, roles de estado, etiquetas de grupo y soporte para teclado.
 
 === Etapa 4 ===
-Prompt: "permite cambiar el estado de cada figurita de forma interactiva entre falta, tengo y repetida"
-Resultado: cada figurita ahora cambia de estado al hacer clic, alternando en el orden falta → tengo → repetida → falta.
+Prompt: "agrega filtros y búsqueda para la colección de figuritas"
+Resultado: la vista ahora permite buscar figuritas por nombre o número y filtrar por estado, combinando ambos criterios antes de renderizar las tarjetas.
 Utilidad: útil.
 
 Qué modifiqué o corregí:
-- Implementé un estado en App.jsx basado en un objeto de estados por figurita usando useState.
-- Inicialicé todas las figuritas en estado "falta".
-- Creé la función handleStatusChange(id) para alternar el estado de cada figurita.
-- Pasé esa función como prop a StickerCard y la ejecuté al hacer clic en la tarjeta.
-- Ajusté el estilo visual del componente para reflejar el estado actual de forma inmediata.
+- Añadí un campo de búsqueda controlado con useState para filtrar figuritas por nombre o número.
+- Incorporé botones para filtrar por estado: Todas, Tengo, Repetidas y Faltan.
+- Apliqué ambos filtros de forma simultánea sobre el array antes de renderizar las tarjetas.
+- Mostré el total de figuritas visibles según el filtro activo.
+
+=== Etapa 5 ===
+Prompt: "agrega un panel de estadísticas y persistencia del estado en localStorage"
+Resultado: la app ahora muestra un resumen de la colección y conserva el estado de las figuritas al recargar la página.
+Utilidad: útil.
+
+Qué modifiqué o corregí:
+- Creé el componente AlbumSummary.jsx para mostrar total, tengo, repetidas, faltan y porcentaje de completitud.
+- Implementé useEffect para guardar el estado de la colección en localStorage cada vez que cambia.
+- Implementé useEffect para recuperar el estado guardado al cargar la app, si existe.
+- Verifiqué que el estado se conserva al recargar la página.
 
