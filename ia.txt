@@ -1,0 +1,10 @@
+=== Etapa 1 ===
+Prompt: "crea la estructura de carpetas para un proyecto React con Vite"
+Resultado: me generó la estructura base, pero tuve que crear la carpeta data/ manualmente y ajustar el archivo de datos.
+Utilidad: parcialmente útil.
+
+Qué modifiqué o corregí:
+- Agregué la carpeta src/data/ con el archivo stickers.js.
+- Ajusté la estructura para que App.jsx importe los datos desde esa ruta.
+- Creé los archivos principales de Vite: index.html, package.json, src/main.jsx y la aplicación base.
+
