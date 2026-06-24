@@ -50,3 +50,12 @@ Qué modifiqué o corregí:
 - Implementé useEffect para recuperar el estado guardado al cargar la app, si existe.
 - Verifiqué que el estado se conserva al recargar la página.
 
+=== Etapa 6 ===
+Prompt: "agrega un filtro para mostrar figuritas agrupadas por equipo"
+Resultado: ahora se puede filtrar la colección por equipo, por ejemplo para ver todos los elementos de Alemania.
+Utilidad: útil.
+
+Qué modifiqué o corregí:
+- Añadí un selector de equipo en la interfaz para filtrar la colección por sección o país.
+- Integré ese filtro con la búsqueda y el filtro de estado para trabajar simultáneamente.
+

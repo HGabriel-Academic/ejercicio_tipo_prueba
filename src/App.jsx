@@ -49,7 +49,16 @@ function App() {
     }
   });
   const [statusFilter, setStatusFilter] = useState('all');
+  const [teamFilter, setTeamFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const teamOptions = useMemo(() => {
+    const teams = stickers
+      .map((sticker) => sticker.section)
+      .filter((section) => section && typeof section === 'string');
+
+    return [...new Set(teams)].sort((a, b) => a.localeCompare(b));
+  }, [stickers]);
 
   const counts = useMemo(() => {
     return Object.values(statuses).reduce(
@@ -79,12 +88,13 @@ function App() {
 
     return stickers.filter((sticker) => {
       const matchesStatus = statusFilter === 'all' || statuses[sticker.id] === statusFilter;
+      const matchesTeam = teamFilter === 'all' || sticker.section === teamFilter;
       const haystack = `${sticker.number} ${sticker.name}`.toLowerCase();
       const matchesSearch = normalizedSearch === '' || haystack.includes(normalizedSearch);
 
-      return matchesStatus && matchesSearch;
+      return matchesStatus && matchesTeam && matchesSearch;
     });
-  }, [searchTerm, statusFilter, stickers, statuses]);
+  }, [searchTerm, statusFilter, teamFilter, stickers, statuses]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -126,6 +136,23 @@ function App() {
             placeholder="Por nombre o número"
             style={styles.searchInput}
           />
+        </label>
+
+        <label style={styles.teamFilterBox} htmlFor="team-filter">
+          <span style={styles.searchLabel}>Equipo</span>
+          <select
+            id="team-filter"
+            value={teamFilter}
+            onChange={(event) => setTeamFilter(event.target.value)}
+            style={styles.teamSelect}
+          >
+            <option value="all">Todos los equipos</option>
+            {teamOptions.map((team) => (
+              <option key={team} value={team}>
+                {team}
+              </option>
+            ))}
+          </select>
         </label>
 
         <div style={styles.filters} role="group" aria-label="Filtrar figuritas por estado">
@@ -217,6 +244,20 @@ const styles = {
     padding: '10px 12px',
     fontSize: '0.95rem',
     color: '#102a43',
+  },
+  teamFilterBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    minWidth: '220px',
+  },
+  teamSelect: {
+    border: '1px solid #bcccdc',
+    borderRadius: '12px',
+    padding: '10px 12px',
+    fontSize: '0.95rem',
+    color: '#102a43',
+    background: '#fff',
   },
   filters: {
     display: 'flex',
