@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import StickerCard from './components/StickerCard';
 import stickersData from './data/stickers';
 
@@ -43,6 +44,7 @@ function App() {
   };
 
   const visibleStickers = stickers.filter((sticker) => filter === 'all' || sticker.status === filter);
+  const previewStickers = visibleStickers.slice(0, 5);
 
   return (
     <div style={styles.page}>
@@ -52,7 +54,7 @@ function App() {
           <h1 style={styles.title}>Mi álbum de figuritas</h1>
           <p style={styles.subtitle}>Gestiona tus figuritas de forma visual y rápida.</p>
         </div>
-        <div style={styles.summaryBox}>
+        <div style={styles.summaryBox} role="status" aria-live="polite">
           <div style={styles.summaryItem}><strong>{stickers.length}</strong><span>Total</span></div>
           <div style={styles.summaryItem}><strong>{counts.collected}</strong><span>Tengo</span></div>
           <div style={styles.summaryItem}><strong>{counts.missing}</strong><span>Faltan</span></div>
@@ -60,28 +62,30 @@ function App() {
         </div>
       </header>
 
-      <div style={styles.filters}>
+      <div style={styles.filters} role="group" aria-label="Filtrar figuritas por estado">
         {['all', 'missing', 'collected', 'duplicate'].map((option) => (
           <button
             key={option}
             onClick={() => setFilter(option)}
             style={{ ...styles.filterButton, ...(filter === option ? styles.activeFilter : {}) }}
+            aria-pressed={filter === option}
           >
             {option === 'all' ? 'Todas' : statusLabels[option]}
           </button>
         ))}
       </div>
 
-      <section style={styles.grid}>
-        {visibleStickers.map((sticker) => (
-          <StickerCard
-            key={sticker.id}
-            number={sticker.number}
-            name={sticker.name}
-            group={sticker.group}
-            status={sticker.status}
-            onToggle={() => toggleStatus(sticker.id)}
-          />
+      <section style={styles.grid} aria-label="Lista de figuritas">
+        {previewStickers.map((sticker) => (
+          <ErrorBoundary key={sticker.id}>
+            <StickerCard
+              number={sticker.number}
+              name={sticker.name}
+              group={sticker.group}
+              status={sticker.status}
+              onToggle={() => toggleStatus(sticker.id)}
+            />
+          </ErrorBoundary>
         ))}
       </section>
     </div>

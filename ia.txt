@@ -8,3 +8,23 @@ Qué modifiqué o corregí:
 - Ajusté la estructura para que App.jsx importe los datos desde esa ruta.
 - Creé los archivos principales de Vite: index.html, package.json, src/main.jsx y la aplicación base.
 
+=== Etapa 2 ===
+Prompt: "crea un componente StickerCard con props number, name, group y status; aplica estilos por estado y muéstralo desde App.jsx con datos del array importado"
+Resultado: el componente quedó implementado con estilos visuales claros para falta, tengo y repetida, y App.jsx lo usa para mostrar figuritas desde la data.
+Utilidad: útil.
+
+Qué modifiqué o corregí:
+- Creé y adapté el componente StickerCard para recibir las props solicitadas y mostrar información de forma visual.
+- Cambié los colores a una paleta accesible con contraste alto y una tipografía legible.
+- Ajusté App.jsx para renderizar varias figuritas usando el componente y los datos del array importado.
+
+=== Etapa 3 ===
+Prompt: "agrega prop-types para validar propiedades, implementa error boundaries y mejora la accesibilidad con semántica, roles, labels y foco visible"
+Resultado: se añadieron validaciones de props, un componente ErrorBoundary y mejoras de accesibilidad en la interfaz para teclado, etiquetas y estados informativos.
+Utilidad: útil.
+
+Qué modifiqué o corregí:
+- Agregué prop-types para validar las props del componente StickerCard.
+- Implementé un ErrorBoundary para capturar errores de render y mostrar un mensaje accesible.
+- Mejoré la semántica de la interfaz con botones accesibles, roles de estado, etiquetas de grupo y soporte para teclado.
+
